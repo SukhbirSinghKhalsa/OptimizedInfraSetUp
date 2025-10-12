@@ -4,6 +4,12 @@ module "resource_group" {
 }
 
 module "storage_account" {
+  depends_on = [ module.resource_group]
   source = "../../modules/storage_accounts"
   storage_account_reference = var.storage_account_reference
+
+}
+
+output "test_outputs" {
+  value = module.resource_group.resource_group
 }
