@@ -9,7 +9,7 @@ permissions:
   
 jobs: 
   terraform-init-plan:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     continue-on-error: false
     steps: 
       - name: Checkout to ${{ github.ref_name }}
@@ -44,7 +44,7 @@ jobs:
         working-directory: environments/sandbox    
         
   terraform-apply:    
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if:  github.ref_name == 'main'
     needs: terraform-init-plan
     environment: sandbox
