@@ -3,6 +3,9 @@ name: "Sandbox Terraform Workflow"
 on:
   workflow_dispatch:
 
+env: 
+  ARM_SUBSCRIPTION_ID: ${{ secrets.SUBCRIPTION_ID }}
+
 permissions:
   id-token: write
   contents: read
