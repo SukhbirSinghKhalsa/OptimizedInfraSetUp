@@ -1,10 +1,10 @@
 trigger: none
 
-pool: Fire
+pool: selfhostedagent-ssk
 
 variables:
 - name: WRKDIR
-  value: $(System.DefaultWorkingDirectory)/environment/dev
+  value: $(System.DefaultWorkingDirectory)/environment/sandbox
 
 stages: 
 - stage: init
@@ -19,9 +19,9 @@ stages:
               command: 'init'
               workingDirectory: '$(WRKDIR)'
               backendServiceArm: 'Infra connection'
-              backendAzureRmResourceGroupName: 'ror'
-              backendAzureRmStorageAccountName: 'datakeeper01'
-              backendAzureRmContainerName: 'blobcontainer'
+              backendAzureRmResourceGroupName: 'ssk-inc-sandbox-rg'
+              backendAzureRmStorageAccountName: 'sskincsandboxstg1'
+              backendAzureRmContainerName: 'terrsformstatecontainer'
               backendAzureRmKey: 'terraform.tfstate'
 - stage: scanning
   displayName: Scanning code
