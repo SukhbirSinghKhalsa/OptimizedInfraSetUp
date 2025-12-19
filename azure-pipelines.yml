@@ -1,0 +1,94 @@
+trigger: none
+
+pool: Fire
+
+variables:
+- name: WRKDIR
+  value: $(System.DefaultWorkingDirectory)/environment/dev
+
+stages: 
+- stage: init
+  displayName: terraform init
+  jobs:
+      - job: terraform
+        steps:
+          - task: TerraformTask@5
+            displayName: terraform init
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: '$(WRKDIR)'
+              backendServiceArm: 'Infra connection'
+              backendAzureRmResourceGroupName: 'ror'
+              backendAzureRmStorageAccountName: 'datakeeper01'
+              backendAzureRmContainerName: 'blobcontainer'
+              backendAzureRmKey: 'terraform.tfstate'
+- stage: scanning
+  displayName: Scanning code
+  dependsOn: init
+  jobs:
+    - job: checkov
+      steps:
+        - task: PowerShell@2
+          displayName: Checkov scanning
+          continueOnError: true
+          inputs:
+            targetType: 'inline'
+            script: 'checkov -d "$(System.DefaultWorkingDirectory)" -o junitxml > checkovres.xml'
+        - task: PublishTestResults@2
+          displayName: Checkov Publish Report 
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'checkovres.xml'
+        - task: PowerShell@2
+          displayName: TFlint scanning
+          continueOnError: true
+          inputs:
+            targetType: 'inline'
+            script: 'tflint --chdir="$(System.DefaultWorkingDirectory)" --recursive --format junit | Out-File -Encoding utf8 > tflint-report.xml ;exit 0 '
+        - task: PublishTestResults@2
+          displayName: TFlint Publish Report
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'tflint-report.xml'
+
+- stage: 
+  displayName: Terraform plan
+  jobs:
+    - job: 
+      steps:
+      - template: inittemplate.yaml
+
+      - task: TerraformTask@5
+        displayName: Terraform plan
+        inputs:
+          provider: 'azurerm'
+          command: 'plan'
+          workingDirectory: '$(WRKDIR)'
+          environmentServiceNameAzureRM: 'Infra connection'
+- stage: 
+  displayName: Manual validation
+  jobs:
+    - job: 
+      pool: server
+      steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'himalayakadiyan@outlook.com'
+            approvers: 'himalayakadiyan@outlook.com'
+- stage: 
+  displayName: Terraform apply
+  jobs:
+    - job: 
+      steps:
+        - template: inittemplate.yaml
+        - task: TerraformTask@5
+          displayName: Terraform apply
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(WRKDIR)'
+            environmentServiceNameAzureRM: 'Infra connection'
+        
+
+        
